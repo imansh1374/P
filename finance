@@ -1,0 +1,88 @@
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import statistics
+from sklearn import preprocessing
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+
+#Getting Data / t = train
+sp500t = yf.download("^GSPC", start="2006-01-01", end="2007-12-30") 
+sp500 = yf.download("^GSPC", start="2008-01-01", end="2008-12-30")
+kospit = yf.download("^KS11", start="2006-01-01", end="2007-12-30")
+kospi = yf.download("^KS11", start="2008-01-01", end="2008-12-30")
+jonest = yf.download("^DJI", start="2006-01-01", end="2007-12-30")
+jones = yf.download("^DJI", start="2008-01-01", end="2008-12-30")
+nasdaqt = yf.download("^IXIC", start="2006-01-01", end="2007-12-30")
+nasdaq = yf.download("^IXIC", start="2008-01-01", end="2008-12-30")
+
+#Scaling Formula
+
+def normal_scaling(df): #data_normalization
+    
+    df_norm = df.copy()
+    
+    for column in df_norm.columns:
+        df_norm[column] = (df_norm[column] - df_norm[column].statistics.mean()) / (df_norm[column] - df_norm[column].stdev())
+        
+    return df_norm
+
+ #def min_max_scaling(df):
+    
+  #  df_norm = df.copy()
+    
+    #for column in df_norm.columns:
+    #    df_norm[column] = (df_norm[column] - df_norm[column].min()) / (df_norm[column].max() - df_norm[column].min())
+        
+ #   return df_norm   
+   
+ 
+
+
+#scaler = MinMaxScaler()
+scaler = StandardScaler()
+
+#Print and scaling in Fromula
+
+df_norm = pd.DataFrame(scaler.fit_transform(kospit), columns=kospit.columns)
+kospint = df_norm
+print("Kospi Train =" , kospint)
+del(df_norm)
+df_norm = pd.DataFrame(scaler.fit_transform(sp500t), columns=kospit.columns)
+sp500nt = df_norm
+print("SP500 Train = ", sp500nt)
+del(df_norm)
+df_norm = pd.DataFrame(scaler.fit_transform(jonest), columns=kospit.columns)
+jonesnt = df_norm
+print("Jones Train = ", jonesnt) 
+del(df_norm)
+df_norm = pd.DataFrame(scaler.fit_transform(nasdaqt), columns=kospit.columns)
+nasdaqnt = df_norm
+print("NASDAQ Train = ", nasdaqnt) 
+
+
+df_norm = pd.DataFrame(scaler.fit_transform(kospi), columns=kospit.columns)
+kospin = df_norm
+print("Kospi Test =" , kospin)
+del(df_norm)
+df_norm = pd.DataFrame(scaler.fit_transform(sp500), columns=kospit.columns)
+sp500n = df_norm
+print("SP500 Test = ", sp500n)
+del(df_norm)
+df_norm = pd.DataFrame(scaler.fit_transform(jones), columns=kospit.columns)
+jonesn = df_norm
+print("Jones Test = ", jonesn) 
+del(df_norm)
+df_norm = pd.DataFrame(scaler.fit_transform(nasdaq), columns=kospit.columns)
+nasdaqn = df_norm
+print("NASDAQ Test = ", nasdaqn) 
+
+#Plotting
+plt.plot(kospit, label = "kospi")
+plt.plot(sp500t, label = "sp500")
+plt.plot(jonest, label = "jones")
+plt.plot(nasdaqt, label = "Nasdaq")
+
+plt.xlabel('Date')
+plt.ylabel('Normalized Price')
