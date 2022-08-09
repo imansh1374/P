@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 import pandas as pd
 import yfinance as yf
 import statistics
@@ -6,6 +7,7 @@ from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
+from sklearn.feature_extraction.text import CountVectorizer
 
 #Getting Data / t = train
 sp500t = yf.download("^GSPC", start="2006-01-01", end="2007-12-30") 
@@ -46,38 +48,43 @@ scaler = StandardScaler()
 #Print and scaling in Fromula
 
 df_norm = pd.DataFrame(scaler.fit_transform(kospit), columns=kospit.columns)
-kospint = df_norm
+kospint = np.where(df_norm<0, 0, df_norm) #convert negative numbers to zero
 print("Kospi Train =" , kospint)
 del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(sp500t), columns=kospit.columns)
-sp500nt = df_norm
+sp500nt = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("SP500 Train = ", sp500nt)
 del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(jonest), columns=kospit.columns)
-jonesnt = df_norm
+jonesnt = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("Jones Train = ", jonesnt) 
 del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(nasdaqt), columns=kospit.columns)
-nasdaqnt = df_norm
+nasdaqnt = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("NASDAQ Train = ", nasdaqnt) 
 
 
 df_norm = pd.DataFrame(scaler.fit_transform(kospi), columns=kospit.columns)
-kospin = df_norm
+kospin = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("Kospi Test =" , kospin)
 del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(sp500), columns=kospit.columns)
-sp500n = df_norm
+sp500n = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("SP500 Test = ", sp500n)
 del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(jones), columns=kospit.columns)
-jonesn = df_norm
+jonesn = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("Jones Test = ", jonesn) 
 del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(nasdaq), columns=kospit.columns)
-nasdaqn = df_norm
+nasdaqn = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("NASDAQ Test = ", nasdaqn) 
-
+#Feature Extraction
+#vectorizer = CountVectorizer()
+#vectorizer
+#vectorizer.fit_transform(kospit)
+#X= vectorizer.get_feature_names_out()
+#print(X)
 #Plotting
 plt.plot(kospit, label = "kospi")
 plt.plot(sp500t, label = "sp500")
@@ -86,3 +93,10 @@ plt.plot(nasdaqt, label = "Nasdaq")
 
 plt.xlabel('Date')
 plt.ylabel('Normalized Price')
+
+#DHTC=(high(kospint)-close(kospint))/close(kospint)      #Daytime, High-to-Close Return
+#DOTC=      #Daytime, Open-to-Close Return
+#DLTC=      #Daytime, Low-to-Close Return
+#OCTC=      #Overnight, Close-to-Close Return
+#OOTC=      #Overnight, Open-to-Close Return
+
