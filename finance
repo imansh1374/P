@@ -1,13 +1,21 @@
+import time
 import numpy as np
 import scipy as sp
 import pandas as pd
 import yfinance as yf
+import seaborn as sns
 import statistics
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import learning_curve
+from sklearn.model_selection import validation_curve
+from sklearn.model_selection import cross_val_score
+from sklearn.linear_model import LogisticRegression
+
 
 #Getting Data / t = train
 sp500t = yf.download("^GSPC", start="2006-01-01", end="2007-12-30") 
@@ -79,6 +87,33 @@ del(df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(nasdaq), columns=kospit.columns)
 nasdaqn = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
 print("NASDAQ Test = ", nasdaqn) 
+
+
+#Kospin
+openk = [row[1] for row in kospin.T]
+highk = [row[2] for row in kospin.T]
+lowk = [row[3] for row in kospin.T]
+closek = [row[4] for row in kospin.T]
+
+#SP500
+opens = [row[1] for row in sp500n.T]
+highs = [row[2] for row in sp500n.T]
+lows = [row[3] for row in sp500n.T]
+closes = [row[4] for row in sp500n.T]
+
+#jones
+openj = [row[1] for row in jonesn.T]
+highj = [row[2] for row in jonesn.T]
+lowj = [row[3] for row in jonesn.T]
+closej = [row[4] for row in jonesn.T]
+
+#NASDAQ
+openn = [row[1] for row in nasdaqn.T]
+highn = [row[2] for row in nasdaqn.T]
+lown = [row[3] for row in nasdaqn.T]
+closen = [row[4] for row in nasdaqn.T]
+
+
 #Feature Extraction
 #vectorizer = CountVectorizer()
 #vectorizer
@@ -94,9 +129,8 @@ plt.plot(nasdaqt, label = "Nasdaq")
 plt.xlabel('Date')
 plt.ylabel('Normalized Price')
 
-#DHTC=(high(kospint)-close(kospint))/close(kospint)      #Daytime, High-to-Close Return
+DHTC=(np.array(highk) -np.array(closek))/np.array(closek)      #Daytime, High-to-Close Return
 #DOTC=      #Daytime, Open-to-Close Return
 #DLTC=      #Daytime, Low-to-Close Return
 #OCTC=      #Overnight, Close-to-Close Return
 #OOTC=      #Overnight, Open-to-Close Return
-
