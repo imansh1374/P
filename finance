@@ -1,3 +1,4 @@
+import math
 import time
 import numpy as np
 import scipy as sp
@@ -5,6 +6,7 @@ import pandas as pd
 import yfinance as yf
 import seaborn as sns
 import statistics
+import tensorflow as tf
 from sklearn import preprocessing
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
@@ -15,10 +17,11 @@ from sklearn.model_selection import learning_curve
 from sklearn.model_selection import validation_curve
 from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import LogisticRegression
+from tensorflow import keras
+from tensorflow.keras import layers
 
-
-#Getting Data / t = train
-sp500t = yf.download("^GSPC", start="2006-01-01", end="2007-12-30") 
+# Getting Data / t = train
+sp500t = yf.download("^GSPC", start="2006-01-01", end="2007-12-30")
 sp500 = yf.download("^GSPC", start="2008-01-01", end="2008-12-30")
 kospit = yf.download("^KS11", start="2006-01-01", end="2007-12-30")
 kospi = yf.download("^KS11", start="2008-01-01", end="2008-12-30")
@@ -27,110 +30,159 @@ jones = yf.download("^DJI", start="2008-01-01", end="2008-12-30")
 nasdaqt = yf.download("^IXIC", start="2006-01-01", end="2007-12-30")
 nasdaq = yf.download("^IXIC", start="2008-01-01", end="2008-12-30")
 
-#Scaling Formula
 
-def normal_scaling(df): #data_normalization
-    
+# Scaling Formula
+
+def normal_scaling(df):  # data_normalization
+
     df_norm = df.copy()
-    
+
     for column in df_norm.columns:
-        df_norm[column] = (df_norm[column] - df_norm[column].statistics.mean()) / (df_norm[column] - df_norm[column].stdev())
-        
+        df_norm[column] = (df_norm[column] - df_norm[column].statistics.mean()) / (
+                    df_norm[column] - df_norm[column].stdev())
+
     return df_norm
 
- #def min_max_scaling(df):
-    
-  #  df_norm = df.copy()
-    
-    #for column in df_norm.columns:
-    #    df_norm[column] = (df_norm[column] - df_norm[column].min()) / (df_norm[column].max() - df_norm[column].min())
-        
- #   return df_norm   
-   
- 
+
+# def min_max_scaling(df):
+
+#  df_norm = df.copy()
+
+# for column in df_norm.columns:
+#    df_norm[column] = (df_norm[column] - df_norm[column].min()) / (df_norm[column].max() - df_norm[column].min())
+
+#   return df_norm
 
 
-#scaler = MinMaxScaler()
+# scaler = MinMaxScaler()
 scaler = StandardScaler()
 
-#Print and scaling in Fromula
+# Print and scaling in Fromula
 
 df_norm = pd.DataFrame(scaler.fit_transform(kospit), columns=kospit.columns)
-kospint = np.where(df_norm<0, 0, df_norm) #convert negative numbers to zero
-print("Kospi Train =" , kospint)
-del(df_norm)
+kospint = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
+print("Kospi Train =", kospint)
+del (df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(sp500t), columns=kospit.columns)
-sp500nt = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
+sp500nt = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
 print("SP500 Train = ", sp500nt)
-del(df_norm)
+del (df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(jonest), columns=kospit.columns)
-jonesnt = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
-print("Jones Train = ", jonesnt) 
-del(df_norm)
+jonesnt = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
+print("Jones Train = ", jonesnt)
+del (df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(nasdaqt), columns=kospit.columns)
-nasdaqnt = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
-print("NASDAQ Train = ", nasdaqnt) 
-
+nasdaqnt = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
+print("NASDAQ Train = ", nasdaqnt)
 
 df_norm = pd.DataFrame(scaler.fit_transform(kospi), columns=kospit.columns)
-kospin = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
-print("Kospi Test =" , kospin)
-del(df_norm)
+kospin = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
+print("Kospi Test =", kospin)
+del (df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(sp500), columns=kospit.columns)
-sp500n = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
+sp500n = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
 print("SP500 Test = ", sp500n)
-del(df_norm)
+del (df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(jones), columns=kospit.columns)
-jonesn = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
-print("Jones Test = ", jonesn) 
-del(df_norm)
+jonesn = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
+print("Jones Test = ", jonesn)
+del (df_norm)
 df_norm = pd.DataFrame(scaler.fit_transform(nasdaq), columns=kospit.columns)
-nasdaqn = np.where(df_norm<0, 0, df_norm)#convert negative numbers to zero
-print("NASDAQ Test = ", nasdaqn) 
+nasdaqn = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers to zero
+print("NASDAQ Test = ", nasdaqn)
 
-
-#Kospin
+# Kospin
 openk = [row[1] for row in kospin.T]
 highk = [row[2] for row in kospin.T]
 lowk = [row[3] for row in kospin.T]
 closek = [row[4] for row in kospin.T]
+#closek = [i for i in closek if i != 0]
 
-#SP500
+# SP500
 opens = [row[1] for row in sp500n.T]
 highs = [row[2] for row in sp500n.T]
 lows = [row[3] for row in sp500n.T]
 closes = [row[4] for row in sp500n.T]
+#closes = [i for i in closes if i != 0]
 
-#jones
+# jones
 openj = [row[1] for row in jonesn.T]
 highj = [row[2] for row in jonesn.T]
 lowj = [row[3] for row in jonesn.T]
 closej = [row[4] for row in jonesn.T]
+#closej = [i for i in closej if i == 0 i=10**(-3)]
 
-#NASDAQ
+# NASDAQ
 openn = [row[1] for row in nasdaqn.T]
 highn = [row[2] for row in nasdaqn.T]
 lown = [row[3] for row in nasdaqn.T]
 closen = [row[4] for row in nasdaqn.T]
-
-
-#Feature Extraction
-#vectorizer = CountVectorizer()
-#vectorizer
-#vectorizer.fit_transform(kospit)
-#X= vectorizer.get_feature_names_out()
-#print(X)
-#Plotting
-plt.plot(kospit, label = "kospi")
-plt.plot(sp500t, label = "sp500")
-plt.plot(jonest, label = "jones")
-plt.plot(nasdaqt, label = "Nasdaq")
+#closen = [i for i in closen if i == 0 i=10**(-3)]
+print(closek)
+plt.plot(kospit, label="kospi")
+plt.plot(sp500t, label="sp500")
+plt.plot(jonest, label="jones")
+plt.plot(nasdaqt, label="Nasdaq")
 
 plt.xlabel('Date')
 plt.ylabel('Normalized Price')
 
-DHTC=(np.array(highk) -np.array(closek))/np.array(closek)      #Daytime, High-to-Close Return
-#DOTC=      #Daytime, Open-to-Close Return
-#DLTC=      #Daytime, Low-to-Close Return
-#OCTC=      #Overnight, Close-to-Close Return
-#OOTC=      #Overnight, Open-to-Close Return
+
+
+
+# Daytime, High-to-Close Return Kospin
+DHTCk = (np.array(highk) - np.array(closek)) / np.array(closek)  
+DOTCk=  (np.array(openk) - np.array(closek)) / np.array(closek)    #Daytime, Open-to-Close Return
+DLTCk= (np.array(lowk) - np.array(closek)) / np.array(closek)     #Daytime, Low-to-Close Return
+ 
+
+# Daytime, High-to-Close Return Kospin
+DHTCs = (np.array(highs) - np.array(closes)) / np.array(closes)  
+DOTCs= (np.array(opens) - np.array(closes)) / np.array(closes)     #Daytime, Open-to-Close Return
+DLTCs=  (np.array(lows) - np.array(closes)) / np.array(closes)    #Daytime, Low-to-Close Return
+ 
+
+# Daytime, High-to-Close Return Jones
+DHTCj = (np.array(highj) - np.array(closej)) / np.array(closej)  
+DOTCj=   (np.array(openj) - np.array(closej)) / np.array(closej)   #Daytime, Open-to-Close Return
+DLTCj=  (np.array(lowj) - np.array(closej)) / np.array(closej)    #Daytime, Low-to-Close Return
+ 
+
+# Daytime, High-to-Close Return NASDAQ
+DHTCn = (np.array(highn) - np.array(closen)) / np.array(closen)  
+DOTCn= (np.array(openn) - np.array(closen)) / np.array(closen)     #Daytime, Open-to-Close Return
+DLTCn=  (np.array(lown) - np.array(closen)) / np.array(closen)    #Daytime, Low-to-Close Return
+
+x_train = [] #empty list for train
+y_train = []
+for i in range(60, len(kospint)):
+    x_train.append(kospint[i-60:i, 0]) #train for 60 days
+    y_train.append(kospint[i, 0])
+x_train, y_train = np.array(x_train), np.array(y_train) #
+x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) #convert to np array for Tensroflow formating code, reshape them into 3 dim array for LSTM model
+
+model = keras.Sequential()
+model.add(layers.LSTM(100, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+model.add(layers.LSTM(100, return_sequences=False))
+model.add(layers.Dense(25))
+model.add(layers.Dense(1))
+model.summary()
+
+model.compile(optimizer='adam', loss='mean_squared_error')
+model.fit(x_train, y_train, batch_size= 1, epochs=3)
+
+training_data_len = math.ceil(len(closek)* 0.8)
+test_data = [training_data_len-60  ]
+x_test = []
+y_test = closek[training_data_len:]
+
+for i in range(60, len(test_data)):
+  x_test.append(test_data[i-60:i, 0])
+
+x_test = np.array(x_test)
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) 
+
+predictions = model.predict(x_test)
+predictions = scaler.inverse_transform(predictions)
+rmse = np.sqrt(np.mean(predictions - y_test)**2)
+rmse
