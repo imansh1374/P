@@ -168,19 +168,21 @@ model.add(layers.Dense(25))
 model.add(layers.Dense(1))
 model.summary()
 
-model.compile(optimizer='adam', loss='mean_squared_error')
-model.fit(x_train, y_train, batch_size= 1, epochs=3)
+model.compile(optimizer='adam', loss='mean_squared_error', run_eagerly=True)
+model.fit(x_train, y_train, batch_size= 8, epochs=3)
 
 training_data_len = math.ceil(len(closek)* 0.8)
 test_data = [training_data_len-60  ]
 x_test = []
 y_test = closek[training_data_len:]
 
-for i in range(60, len(test_data)):
+for i in range(60, len(closek)):
   x_test.append(test_data[i-60:i, 0])
 
 x_test = np.array(x_test)
-x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1)) 
+x_test = np.reshape(x_test, (x_test.shape+ (1,))) 
+
+
 
 predictions = model.predict(x_test)
 predictions = scaler.inverse_transform(predictions)
