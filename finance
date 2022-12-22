@@ -92,31 +92,31 @@ nasdaqn = np.where(df_norm < 0, 10**(-3), df_norm)  # convert negative numbers t
 print("NASDAQ Test = ", nasdaqn)
 
 # Kospin
-openk = [row[1] for row in kospin.T]
-highk = [row[2] for row in kospin.T]
-lowk = [row[3] for row in kospin.T]
-closek = [row[4] for row in kospin.T]
+openk = [row[1] for row in kospin]
+highk = [row[2] for row in kospin]
+lowk = [row[3] for row in kospin]
+closek = [row[4] for row in kospin]
 #closek = [i for i in closek if i != 0]
 
 # SP500
-opens = [row[1] for row in sp500n.T]
-highs = [row[2] for row in sp500n.T]
-lows = [row[3] for row in sp500n.T]
-closes = [row[4] for row in sp500n.T]
+opens = [row[1] for row in sp500n]
+highs = [row[2] for row in sp500n]
+lows = [row[3] for row in sp500n]
+closes = [row[4] for row in sp500n]
 #closes = [i for i in closes if i != 0]
 
 # jones
-openj = [row[1] for row in jonesn.T]
-highj = [row[2] for row in jonesn.T]
-lowj = [row[3] for row in jonesn.T]
-closej = [row[4] for row in jonesn.T]
+openj = [row[1] for row in jonesn]
+highj = [row[2] for row in jonesn]
+lowj = [row[3] for row in jonesn]
+closej = [row[4] for row in jonesn]
 #closej = [i for i in closej if i == 0 i=10**(-3)]
 
 # NASDAQ
-openn = [row[1] for row in nasdaqn.T]
-highn = [row[2] for row in nasdaqn.T]
-lown = [row[3] for row in nasdaqn.T]
-closen = [row[4] for row in nasdaqn.T]
+openn = [row[1] for row in nasdaqn]
+highn = [row[2] for row in nasdaqn]
+lown = [row[3] for row in nasdaqn]
+closen = [row[4] for row in nasdaqn]
 #closen = [i for i in closen if i == 0 i=10**(-3)]
 print(closek)
 plt.plot(kospit, label="kospi")
@@ -152,15 +152,16 @@ DLTCj=  (np.array(lowj) - np.array(closej)) / np.array(closej)    #Daytime, Low-
 DHTCn = (np.array(highn) - np.array(closen)) / np.array(closen)  
 DOTCn= (np.array(openn) - np.array(closen)) / np.array(closen)     #Daytime, Open-to-Close Return
 DLTCn=  (np.array(lown) - np.array(closen)) / np.array(closen)    #Daytime, Low-to-Close Return
-
+closee= np.array(closek)
+closee= closee.reshape(-1,1)
 x_train = [] #empty list for train
 y_train = []
-for i in range(60, len(kospint)):
-    x_train.append(kospint[i-60:i, 0]) #train for 60 days
-    y_train.append(kospint[i, 0])
+for i in range(60, len(closee)):
+    x_train.append(closee[i-60:i, 0]) #train for 60 days
+    y_train.append(closee[i, 0])
 x_train, y_train = np.array(x_train), np.array(y_train) #
 x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1)) #convert to np array for Tensroflow formating code, reshape them into 3 dim array for LSTM model
-
+y_train = np.reshape(y_train, (y_train.shape+ (1,))) 
 model = keras.Sequential()
 model.add(layers.LSTM(100, return_sequences=True, input_shape=(x_train.shape[1], 1)))
 model.add(layers.LSTM(100, return_sequences=False))
@@ -169,15 +170,15 @@ model.add(layers.Dense(1))
 model.summary()
 
 model.compile(optimizer='adam', loss='mean_squared_error', run_eagerly=True)
-model.fit(x_train, y_train, batch_size= 8, epochs=3)
+model.fit(x_train, y_train, batch_size= 8, epochs=1)
 
-training_data_len = math.ceil(len(closek)* 0.8)
-test_data = [training_data_len-60  ]
+training_data_len = math.ceil(len(closee)* 0.8)
+test_data = closee[training_data_len-60, :]
 x_test = []
 y_test = closek[training_data_len:]
 
-for i in range(60, len(closek)):
-  x_test.append(test_data[i-60:i, 0])
+for i in range(60, len(closee)):
+  x_test.append(closee[i-60:i, 0])
 
 x_test = np.array(x_test)
 x_test = np.reshape(x_test, (x_test.shape+ (1,))) 
