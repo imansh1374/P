@@ -13,11 +13,11 @@ pd.options.mode.chained_assignment = None
 # define the target and features
 
 target = ['Close']
-features = ['DHTC','DOTC' ,'DLTC','OOTC']
+features = ['DHTC','DOTC' ,'DLTC','OCTC','OOTC']
 
 # download the data
-df = yf.download('^GSPC', start='2006-01-01', end='2008-12-30')
-df1= yf.download('^GSPC', start='2005-12-30', end='2008-12-29')
+df = yf.download('^GSPC', start='2006-01-02', end='2008-12-30')
+df1= yf.download('^GSPC', start='2006-01-01', end='2008-12-30')
 #df = df[features + target]
 close_prices = df['Close']
 close_prices1= df1['Close']
@@ -34,7 +34,7 @@ d = {
     "DHTC": pd.Series(DHTC),
     "DOTC": pd.Series(DOTC),
     "DLTC": pd.Series(DLTC),
-     #"OCTC": pd.Series(OCTC),
+     "OCTC": pd.Series(OCTC),
     "OOTC": pd.Series(OOTC),
      "Close": pd.Series(close_prices)
 }
@@ -97,15 +97,14 @@ model.add(Dense(units=1))
 
 model.compile(optimizer='adam', loss='mean_squared_error')
 
-model.fit(X_train, y_train, epochs=1, batch_size=32)
+model.fit(X_train, y_train, epochs=5, batch_size=32)
 
 model.evaluate(X_test, y_test)
 
 # generate the test set predictions
 y_pred = model.predict(X_test)
 y_pred = target_scaler.inverse_transform(y_pred)
-rmse = np.sqrt(np.mean(y_pred - y_test)**2)
-rmse
+
 # plot the test set predictions
 df['Predicted Close'] = np.nan
 df['Predicted Close'].iloc[- y_pred.shape[0]:] = y_pred.flatten()
